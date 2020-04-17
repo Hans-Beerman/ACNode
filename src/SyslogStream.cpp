@@ -33,7 +33,7 @@ size_t SyslogStream::write(uint8_t c) {
 		if (_raw)
                 	syslog.printf("%s\n", logbuff);
 		else
-                	syslog.printf("<135> NoTimeStamp %s %s", _acnode->moi, logbuff);
+                	syslog.printf("<135> NoTimeStamp %s %s\n", _acnode->moi, logbuff);
                 syslog.endPacket();
             };
         };

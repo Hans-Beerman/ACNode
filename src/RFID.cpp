@@ -90,7 +90,7 @@ void RFID::loop() {
            snprintf(buff, sizeof(buff), "%s%d", i ? "-" : "", _mfrc522->uid.uidByte[i]);
            strncat(tag, buff, sizeof(tag));
        };
-
+      Log.printf("Tag ID = %s\n", tag);
 
        // Limit the rate of reporting. Unless it is a new tag.
        //

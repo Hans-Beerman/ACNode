@@ -3,8 +3,6 @@
 
 #include <ACNode-private.h>
 
-#include <MSL.h>
-#include <SIG1.h>
 #include <SIG2.h>
 
 #include <OTA.h>

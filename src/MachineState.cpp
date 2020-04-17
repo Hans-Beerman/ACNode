@@ -139,7 +139,7 @@
     void MachineState::loop()
     {
       if (_state2stateStruct[machinestate] == NULL) {
-	Log.printf("State %d reached - which us undefind. ignoring.", machinestate);
+	      Log.printf("State %d reached - which us undefind. ignoring.\n", machinestate);
         return;
       };
 
@@ -180,7 +180,7 @@
           millis() - laststatechange > _state2stateStruct[machinestate]->autoReportCycle && \
           millis() - lastReport > _state2stateStruct[machinestate]->autoReportCycle)
       {
-        Log.printf("State: %s now for %lu seconds", label(laststate), (millis() - laststatechange) / 1000);
+        Log.printf("State: %s now for %lu seconds\n", label(laststate), (millis() - laststatechange) / 1000);
         lastReport = millis();
       };
 

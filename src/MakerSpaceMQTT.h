@@ -53,7 +53,7 @@
 #endif
 
 #ifndef MQTT_SERVER
-#define MQTT_SERVER 	 "space.makerspaceleiden.nl"
+#define MQTT_SERVER "spacebus.makerspaceleiden.nl"
 #endif
 
 #ifndef MQTT_TOPIC_PREFIX 
@@ -61,7 +61,7 @@
 #endif
 
 #ifndef MQTT_TOPIC_LOG
-#define MQTT_TOPIC_LOG 	   "log"
+#define MQTT_TOPIC_LOG "log"
 #endif
 
 #ifndef MQTT_TOPIC_MASTER

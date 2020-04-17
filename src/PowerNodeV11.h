@@ -37,6 +37,17 @@
 #endif
 
 // SPI based RFID reader
+// if Olimex ESP32-PoE is used
+#ifdef ESP32_PoE
+#define RFID_MOSI_PIN   (13)
+#define RFID_MISO_PIN   (35)
+#define RFID_CLK_PIN    (14)
+#define RFID_SELECT_PIN (15)
+#define RFID_RESET_PIN  (32)
+#define RFID_IRQ_PIN    (33) // Set to -1 to switch to polling mode; 33 to use IRQs
+#endif
+
+// SPI based RFID reader
 #ifndef RFID_MOSI_PIN
 #define RFID_MOSI_PIN   (13)
 #endif

@@ -19,10 +19,14 @@ public:
     acauth_result_t cloak(ACRequest * req);
 
     void add_trusted_node(const char *node);
+
 private:
     char _nonce[B64L(HASH_LENGTH)];
     void populate_nonce(const char * seedOrNull, char nonce[B64L(HASH_LENGTH)]);
     void request_trust(int i);
 };
+
+extern void wipe_eeprom();
+
 #endif
 

@@ -6,5 +6,6 @@ extern unsigned long cacheMiss, cacheHit;
 void prepareCache(bool wipe);
 void setCache(const char * tag, bool ok, unsigned long beatCounter);
 bool checkCache(const char * tag);
+void cacheToSPIFFSLoop(unsigned long beatCounter);
 
 #endif

@@ -3,6 +3,7 @@
 
 OTA::OTA(const char * password) : _ota_password(password) {};
 
+
 void OTA::begin() {
   ArduinoOTA.setPort(8266);
   ArduinoOTA.setHostname((_acnode->moi && _acnode->moi[0]) ? _acnode->moi : "unset-acnode");
@@ -28,12 +29,12 @@ void OTA::begin() {
     static int lp = 0;
     int p = (int)(10. * progress / total + 0.5);
     if (p != lp) {
-	lp = p;
+	      lp = p;
         Serial.printf("..%u%%", (progress / (total / 100)));
     };
   });
   ArduinoOTA.onError([](ota_error_t error) {
-    Log.printf("Error[%u]: ", error);
+    Log.printf("Error[%u]: \n", error);
     if (error == OTA_AUTH_ERROR) Log.println("OTA: Auth failed");
     else if (error == OTA_BEGIN_ERROR) Log.println("OTA: Begin failed");
     else if (error == OTA_CONNECT_ERROR) Log.println("OTA: Connect failed");

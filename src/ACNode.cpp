@@ -13,10 +13,6 @@ ACLog Debug;
 MSL msl = MSL();    // protocol doors (private LAN)
 #endif
 
-#ifdef HAS_SIG1
-SIG1 sig1 = SIG1(); // protocol machines 20015 (HMAC)
-#endif
-
 #ifdef HAS_SIG2
 SIG2 sig2 = SIG2();
 #endif
@@ -156,7 +152,7 @@ void ACNode::begin(eth_board_t board /* default is BOARD_AART */)
         Serial.printf("Starting up wifi (hardcoded SSID <%s>,<%s>)\n", _ssid,_ssid_passwd);
         WiFi.begin(_ssid, _ssid_passwd);
     } else {
-        Serial.println("Staring wifi auto connect.");
+        Serial.println("Starting wifi auto connect.");
         WiFiManager wifiManager;
         wifiManager.autoConnect();
     };
@@ -172,7 +168,6 @@ void ACNode::begin(eth_board_t board /* default is BOARD_AART */)
         delay(500);
 	Serial.print(",");
     };
-    Serial.println("Connected.");
     
     if (!_wired && !isConnected()) {
         // Log.printf("No connection after %d seconds (ssid=%s). Going into config portal (debug mode);.\n", del, WiFi.SSID().c_str());
@@ -181,7 +176,10 @@ void ACNode::begin(eth_board_t board /* default is BOARD_AART */)
         Log.println("Rebooting...");
         delay(1000);
         ESP.restart();
+    } else {
+        Serial.println("Connected.");
     }
+    
     if(_ssid)
         Log.printf("Wifi connected to <%s>\n", WiFi.SSID().c_str());
    
@@ -199,16 +197,6 @@ void ACNode::begin(eth_board_t board /* default is BOARD_AART */)
     configureMQTT();
  
     switch(_proto) {
-    case PROTO_MSL:
-#ifdef HAS_MSL
-       addSecurityHandler(&msl);
-#endif
-	break;
-    case PROTO_SIG1:
-#ifdef HAS_SIG1
-       	addSecurityHandler(&sig1);
-	break;
-#endif
    case PROTO_SIG2:
 #ifdef HAS_SIG2
        	addSecurityHandler(&sig2);
@@ -240,7 +228,7 @@ void ACNode::begin(eth_board_t board /* default is BOARD_AART */)
     wipe_eeprom();
   };
 #endif
-  prepareCache(false);  
+  prepareCache(false);
 }
 
 char * ACNode::cloak(char * tag) {
@@ -248,16 +236,17 @@ char * ACNode::cloak(char * tag) {
     strncpy(q.tag, tag, sizeof(q.tag));
     std::list<ACSecurityHandler *>::iterator it;
     for (it =_security_handlers.begin(); it!=_security_handlers.end(); ++it) {
+
         int r = (*it)->cloak(&q);
+        
         switch(r) {
             case ACSecurityHandler::DECLINE:
                 break;
             case ACSecurityHandler::PASS:
                 break;
             case ACSecurityHandler::OK:
-		Debug.printf("%s -> %s cloaked by %s\n", "*****", q.tag, (*it)->name());
-    		strncpy(tag, q.tag, MAX_MSG);
-		return tag;
+    		    strncpy(tag, q.tag, MAX_MSG);
+		        return tag;
                 break;
             case ACSecurityHandler::FAIL:
             default:
@@ -284,25 +273,41 @@ void ACNode::request_approval(const char * tag, const char * operation, const ch
         // Shortcircuit if permitted. Otherwise do the real thing. Note that our cache is primitive
         // just tags - not commands or node/devices.
 	if (_approved_callback && useCacheOk && checkCache(_lasttag)) {
-                _approved_callback(machine);
+        _approved_callback(machine);
+        setCache(_lasttag, true, (unsigned long) beatCounter);
+        return;
 	};
 
-	char tmp[MAX_MSG];
-	strncpy(tmp, tag, sizeof(tmp));
+	char * tmp = (char *)malloc(MAX_MSG);
+    char * buff = (char *)malloc(MAX_MSG);
+	if (!tmp || !buff) {
+		Log.println("Out of memory during cloacking");
+		goto _return_request_approval;
+//		return;
+	};
+
+    // We need to copy this - as cloak will overwrite this in place.
+    // todo - redesing to be more embedded friendly.
+	strncpy(tmp, tag, MAX_MSG);
 	if (!(cloak(tmp))) {
 		Log.println("Coud not cloak the tag, approval request not sent");
-		return;
+        goto _return_request_approval;
+//		return;
 	};
 
 	Debug.printf("Requesting approval for %s at node %s on machine %s by tag %s\n", 
 		operation ? operation : "<null>", moi ? moi: "<null>", operation ? operation : "<null>", tag ? "*****" : "<null>");
 
-        char buff[MAX_MSG];
-	snprintf(buff,sizeof(buff),"%s %s %s %s", operation, moi, target, tmp);
+	snprintf(buff, MAX_MSG, "%s %s %s %s", operation, moi, target, tmp);
 
         _lastSwipe = beatCounter;
         _reqs++;
 	send(NULL,buff);
+
+_return_request_approval:
+	if (tmp) free(tmp);
+    if (buff) free(buff);
+ 	return;
 };
 
 float loopRate = 0;
@@ -415,19 +420,21 @@ void ACNode::loop() {
     if (lastconnectedstate != connectedstate) {
         if (connectedstate) {
             _connect_callback();
-	} else {
+	    } else {
             _disconnect_callback();
-	};
+	    };
         lastconnectedstate = connectedstate;
     };
   
     Log.loop();
     Debug.loop();
+
+    cacheToSPIFFSLoop(beatCounter);
  
     if(isConnected())
         mqttLoop();
     
-    // Note that this will also run the security and ohter handlers; see
+    // Note that this will also run the security and other handlers; see
     // addSecurityHandler().
     //
     std::list<ACBase *>::iterator it;
@@ -476,7 +483,7 @@ ACBase::cmd_result_t ACNode::handle_cmd(ACRequest * req)
 
       setCache(_lasttag, app, (unsigned long) beatCounter);
 
-      if (app) {
+            if (app) {
          Log.printf("Received OK to power on %s\n", machine);
          if (_approved_callback) {
 		_approved_callback(machine);
@@ -543,7 +550,7 @@ void ACNode::process(const char * topic, const char * payload)
 		(*it)->name(), req->version, req->beat, req->cmd, req->payload, req->rest, payload);
     }
     if (r != ACSecurityHandler::OK) {
-#if defined(HAS_SIG1) || defined (HAS_SIG2) || defined (HAS_MSL)
+#if defined (HAS_SIG2)
         Log.println("Unrecognized payload. Ignoring.");
 #endif
         goto _done;
@@ -630,4 +637,3 @@ void ACNode::delayedReboot() {
         sig2.add_trusted_node(node);
  }
  #endif
-

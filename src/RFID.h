@@ -10,6 +10,7 @@
 #include <Wire.h>
 
 // SPI based RFID reader
+// if POESP board (board Aart) is used
 #ifndef RFID_MOSI_PIN
 #define RFID_MOSI_PIN   (13)
 #endif

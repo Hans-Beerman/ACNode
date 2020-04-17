@@ -94,7 +94,7 @@ const char * ACNode::state2str(int state) {
 }
 
 void ACNode::reconnectMQTT() {
-    Log.printf("Conecting <%s> to %s:%d (MQTT State : %s)\n",
+    Log.printf("Connecting <%s> to %s:%d (MQTT State : %s)\n",
 		ACNode::moi, mqtt_server, mqtt_port, 
 		state2str(_client.state()));
     

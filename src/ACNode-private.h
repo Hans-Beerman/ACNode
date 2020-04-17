@@ -58,11 +58,9 @@ typedef enum {
 	BOARD_OLIMEX 	// https://www.olimex.com/Products/IoT/ESP32/ESP32-POE/open-source-hardware
 } eth_board_t;
 
-// #define HAS_MSL
-// #define HAS_SIG1
 #define HAS_SIG2
 
-typedef enum { PROTO_SIG2, PROTO_SIG1, PROTO_MSL, PROTO_NONE } acnode_proto_t;
+typedef enum { PROTO_SIG2, PROTO_NONE } acnode_proto_t;
 
 // We should prolly split this in an aACLogger and a logging class
 class ACLog : public ACBase, public Print 
@@ -161,7 +159,7 @@ public:
     // Callbacks.
     typedef std::function<void(acnode_error_t)> THandlerFunction_Error;
     ACNode& onError(THandlerFunction_Error fn)
-    	    { _error_callback = fn; return *this; };
+    	{ _error_callback = fn; return *this; };
     
     typedef std::function<void(void)> THandlerFunction_Connect;
     ACNode& onConnect(THandlerFunction_Connect fn)
@@ -253,6 +251,7 @@ protected:
    unsigned long _approve, _deny, _reqs, _mqtt_reconnects, _start_beat;
 };
 
+
 // Unfortunately - MQTT callbacks cannot yet pass
 // a pointer. So we need a 'global' variable; and
 // sort of treat this class as a singleton. And
@@ -266,8 +265,6 @@ extern void send(const char * topic, const char * payload);
 
 extern const char ACNODE_CAPS[];
 
-#include <MSL.h>
-#include <SIG1.h>
 #include <SIG2.h>
 
 #include <Beat.h>
