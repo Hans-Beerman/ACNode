@@ -32,8 +32,8 @@
 #include <PubSubClient.h>        // https://github.com/knolleary/
 
 #include <WiFiUdp.h>
-#include <ArduinoOTA.h>
-#include <PubSubClient.h>        // https://github.com/knolleary/
+// #include <ArduinoOTA.h>
+// #include <PubSubClient.h>        // https://github.com/knolleary/
 
 // ArduinoJSON library -- from https://github.com/bblanchon/ArduinoJson - installed th
 //

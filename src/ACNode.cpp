@@ -188,9 +188,11 @@ void ACNode::begin(eth_board_t board /* default is BOARD_AART */)
     Log.begin();
     Debug.begin(); 
 
-    _espClient = WiFiClient();
-    _client = PubSubClient(_espClient);
-    
+    WiFiClient * myespClient = new WiFiClient();
+    _espClient = *myespClient;
+    PubSubClient * myclient = new PubSubClient(_espClient);
+    _client = *myclient;
+
 #ifdef CONFIGAP
     configBegin();
 #endif

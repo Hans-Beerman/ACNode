@@ -1,6 +1,6 @@
 #include <ACNode-private.h>
 
-#if MQTT_MAX_PACKET_SIZE < 256
+#if MQTT_MAX_PACKET_SIZE < 340
 #error "You will need to increase te MQTT_MAX_PACKET_SIZE size a bit in PubSubClient.h"
 #endif
 
